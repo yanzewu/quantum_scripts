@@ -52,7 +52,7 @@ function wavepacketms()
     end
 
     % Derivative Coupling
-    dR = get_fs_mat(0,1,4)/dx;
+    dR = -get_fs_mat(0,1,4)/(m*dx);
     D = [dot(basis_ad1,conv2(basis_ad0, dR, 'same')); dot(basis_ad0,conv2(basis_ad1, dR, 'same'))];
     
     % adiabatic evolution
