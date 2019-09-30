@@ -7,13 +7,18 @@ function scatter_test()
     V = @(x) and(x>=0, x<L).*V0;
     
     N = 200;
-    k = 2;
-    E = k*k/2;
-    [refl, trans, psi] = m_scatter(N, k, V);
-    trans
-    m_trans = 1/(1+V0^2*sin(sqrt(2*E-V0)*L)^2/4/E/(E-V0))
-    trans + refl
-    plot(real(psi))
+    
+    kall = 0.1:0.2:2;
+    transall = [];
+    m_transall = [];
+    for k = kall
+        E = k*k/2;
+        [refl, trans, psi] = m_scatter(N, k, V);
+        m_trans = 1/(1+V0^2*sin(sqrt(2*(E-V0))*L)^2/4/E/(E-V0));
+        transall = [transall;trans];
+        m_transall = [m_transall; m_trans];
+    end
+    plot(kall, transall, 'rx', kall, m_transall, 'b-');
 
 end
 
@@ -42,19 +47,19 @@ function [refl, trans, psi] = m_scatter(N, k, V)
 
     % LHS: Outside stencils
     for q = 0:max_stencil-1
-        H(1,q+1) = sum(exp(-1i*k*dx*((-n+1:0)-q)).*get_t(q-(-n+1:0)));
+        H(q+1,1) = sum(exp(-1i*k*dx*(-n+1:0)).*get_t(q-(-n+1:0)));
     end
     for q = N+1-max_stencil:N+1
-        H(N+2,q+1) = sum(exp(1i*k*dx*((0:n-1)+q)).*get_t(N+1-q+(0:n-1)));
+        H(q+1,N+2) = sum(exp(1i*k*dx*(0:n-1)).*get_t(N+1-q+(0:n-1)));
     end
     
     % LHS: Inside stencils
-    for q = 2:N+1
-        reallimit = min(q+max_stencil-1,N+1);
-        H(q,q:reallimit) = get_t((q:reallimit)-q);
+    for q = 1:N+2
+        min_q = max(q-max_stencil+1, 2);
+        max_q = min(q+max_stencil-1, N+1);
+        H(q,min_q:max_q) = get_t((min_q:max_q)-q);
     end
     
-    H = H + H' - diag(diag(H)');
     H(2:N+1,2:N+1) = H(2:N+1,2:N+1) + diag(V(((2:N+1)-(N+3)/2)*dx));
     
     % LHS: Energy
@@ -63,7 +68,7 @@ function [refl, trans, psi] = m_scatter(N, k, V)
     % RHS
     rhs = zeros(N+2,1);
     for q = 0:max_stencil-1
-        rhs(q+1) = sum(exp(1i*k*dx*((-n+1:0)-q)).*get_t(q-(-n+1:0)));
+        rhs(q+1) = -sum(exp(1i*k*dx*(-n+1:0)).*get_t(q-(-n+1:0)));
     end
     rhs(1) = rhs(1) + k*k/2/m;
     
