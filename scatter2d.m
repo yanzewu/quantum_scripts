@@ -6,6 +6,9 @@ function scatter2d
     Vx = @(x) and(x>=0, x<L).*V0;
     Vy = @(y) zeros(size(y));
     
+    m = 10;
+    dx = 0.02;
+
     Nx = 100;
     Ny = 20;
     Ly = 0.02*(Ny-1);
@@ -17,16 +20,15 @@ function scatter2d
     m_transall = [];
     for k = kall
     
-    E = k*k/2;
+    E = k*k/2/m
     
     Ey = pi^2/2/Ly^2;
     y = (0:Ny-1)*0.02;
     psi0_y = sin(pi/Ly*y) * sqrt(2/Ly);
     
-    [refl, trans, psi] = m_scatter(Nx, Ny, k, Ey, psi0_y.', Vx, Vy);
+    [refl, trans, psi] = m_scatter(Nx, Ny, k, Ey, psi0_y.', Vx, Vy, m, dx);
     trans
-    m_trans = 1/(1+V0^2*sin(sqrt(2*(E-V0))*L)^2/4/E/(E-V0))
-    trans+refl
+    m_trans = 1/(1+V0^2*sin(sqrt(2*m*(E-V0))*L)^2/4/E/(E-V0))
     transall = [transall; trans];
     m_transall = [m_transall; m_trans];
     end
@@ -35,13 +37,11 @@ function scatter2d
 
 end
 
-function [refl, trans, psi] = m_scatter(Nx, Ny, k, Ey, psi0_y, Vx, Vy)
+function [refl, trans, psi] = m_scatter(Nx, Ny, k, Ey, psi0_y, Vx, Vy, m, dx)
 % Pseudo 2d scattering
 % psi0_y is required as column vector
 
     n = 3;
-    m = 1;
-    dx = 0.02;
     x = dx*((1:Nx) - (Nx+1)/2);
     y = dx*(0:Ny-1);
     
